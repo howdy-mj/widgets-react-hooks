@@ -20,15 +20,40 @@ const Search = () => {
       });
       setResults(data.query.search);
     };
-    search();
+
+    if (term && !results.length) {
+      // 검색 결과가 없을 때
+      search();
+    } else {
+      const timeoutId = setTimeout(() => {
+        // api 호출을 1초에 한 번 하는 것으로
+        if (term) {
+          // 검색어가 있을 때만 실행
+          search();
+        }
+      }, 1000);
+
+      return () => {
+        // 첫 렌더때는 실행이 안됨
+        clearTimeout(timeoutId);
+      };
+    }
   }, [term]);
 
   const renderedResults = results.map((result) => {
     return (
       <div className="item" key={result.pageid}>
+        <div className="right floated content">
+          <a
+            className="ui button"
+            href={`https://en.wikipedia.org?curid=${result.pageid}`}
+          >
+            Go
+          </a>
+        </div>
         <div className="content">
           <div className="header">{result.title}</div>
-          {result.snippet}
+          <span dangerouslySetInnerHTML={{ __html: result.snippet }}></span>
         </div>
       </div>
     );
