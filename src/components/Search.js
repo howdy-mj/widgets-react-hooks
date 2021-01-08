@@ -3,9 +3,17 @@ import axios from 'axios';
 
 const Search = () => {
   const [term, setTerm] = useState('programming');
+  const [debouncedTerm, setDebouncedTerm] = useState(term);
   const [results, setResults] = useState([]);
 
-  console.log('results', results);
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setDebouncedTerm(term);
+    }, 1000);
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [term]);
 
   useEffect(() => {
     const search = async () => {
@@ -15,30 +23,13 @@ const Search = () => {
           list: 'search',
           origin: '*',
           format: 'json',
-          srsearch: term,
+          srsearch: debouncedTerm,
         },
       });
       setResults(data.query.search);
     };
-
-    if (term && !results.length) {
-      // 검색 결과가 없을 때
-      search();
-    } else {
-      const timeoutId = setTimeout(() => {
-        // api 호출을 1초에 한 번 하는 것으로
-        if (term) {
-          // 검색어가 있을 때만 실행
-          search();
-        }
-      }, 1000);
-
-      return () => {
-        // 첫 렌더때는 실행이 안됨
-        clearTimeout(timeoutId);
-      };
-    }
-  }, [term]);
+    search();
+  }, [debouncedTerm]);
 
   const renderedResults = results.map((result) => {
     return (
